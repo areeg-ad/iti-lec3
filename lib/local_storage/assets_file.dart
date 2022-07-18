@@ -18,19 +18,28 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String? text;
+
+  @override
+  void initState() {
+    super.initState();
+    text = 'another value';
+  }
+
   @override
   Widget build(BuildContext context) {
+    print('build method');
     return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(text ?? 'old text'),
+            Text(text ?? ''),
             SizedBox(
               height: 20,
             ),
             ElevatedButton(
                 onPressed: () {
+                  print('load data');
                   loadData();
                 },
                 child: Text('Load Data')),
@@ -41,9 +50,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   void loadData() async {
-    var data = await rootBundle.loadString('assets/text.txt');
+    String name = await rootBundle.loadString('assets/text.txt');
     setState(() {
-      this.text = data;
+      text = name;
     });
+    print(text);
   }
 }

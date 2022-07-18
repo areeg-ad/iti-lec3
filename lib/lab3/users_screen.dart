@@ -1,18 +1,19 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_samples_2/lab3/details_screen.dart';
 import 'package:http/http.dart' as http;
 
 //presentation layer
-class UsersScreen extends StatefulWidget {
+class ArticlesScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return _UserScreenState();
   }
 }
 
-class _UserScreenState extends State<UsersScreen> {
-  late Future<List<User>> user;
+class _UserScreenState extends State<ArticlesScreen> {
+  late Future<List<News>> user;
 
   @override
   void initState() {
@@ -27,7 +28,7 @@ class _UserScreenState extends State<UsersScreen> {
           future: user,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              var _users = (snapshot.data as List<User>);
+              var _users = (snapshot.data as List<News>);
               //handle data response
               // return UserListItem(_user);
               return ListView.builder(
@@ -47,62 +48,66 @@ class _UserScreenState extends State<UsersScreen> {
 }
 
 class UserListItem extends StatelessWidget {
-  var _user;
+  var _newsList;
 
-  UserListItem(this._user);
+  UserListItem(this._newsList);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height / 5,
       child: Center(
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => DetailsScreen(_newsList)));
+          },
           child: Card(
-        child: Row(
-          children: [
-            Container(
-              child: Image.network(_user.avatar),
-            ),
-            SizedBox(
-              width: 20,
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Row(
               children: [
-                Text(_user.firstName),
-                Text(_user.lastName),
-                Text(_user.email),
+                Container(
+                  child: Image.network(_newsList.picture),
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(_newsList.title),
+                    // Text(_user.lastName),
+                    // Text(_user.email),
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
-      )),
+      ),
     );
   }
 }
 
 //data layer
-class User {
-  int id;
-  String firstName;
-  String lastName;
-  String email;
-  String avatar;
+class News {
+  String id;
+  String title;
+  String content;
+  String picture;
 
-  User(
+  News(
     this.id,
-    this.firstName,
-    this.lastName,
-    this.email,
-    this.avatar,
+    this.title,
+    this.content,
+    this.picture,
   );
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
+  factory News.fromJson(Map<String, dynamic> json) {
+    return News(
       json['id'],
-      json['first_name'],
-      json['last_name'],
-      json['email'],
-      json['avatar'],
+      json['title'],
+      json['content'],
+      json['picture'],
     );
   }
 }
@@ -115,13 +120,14 @@ class UsersUsecase {
 
 //Data layer
 class RemoteDataSource {
-  Future<List<User>> fetchUsers() async {
-    var response = await http.get(Uri.parse('https://reqres.in/api/users'));
+  Future<List<News>> fetchUsers() async {
+    var response = await http.get(
+        Uri.parse('https://62d4154fcd960e45d452f790.mockapi.io/api/article'));
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
 
-      var list = (jsonResponse['data'] as List);
-      var newList = list.map((item) => User.fromJson(item)).toList();
+      var list = (jsonResponse as List);
+      var newList = list.map((item) => News.fromJson(item)).toList();
 
       return newList;
     } else {
